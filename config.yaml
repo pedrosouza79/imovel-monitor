@@ -1,0 +1,46 @@
+# Configuração de busca do monitor de imóveis.
+# Edite os valores abaixo para ajustar o que você está procurando.
+# Todos os filtros são aplicados sobre os 3 sites ao mesmo tempo.
+
+filtros:
+  cidade: "brasilia"
+  estado: "df"
+
+  # Bairros a monitorar. Deixe a lista vazia ([]) para não filtrar por bairro
+  # (traz todos os bairros de Brasília). Use os nomes como aparecem nos sites,
+  # em minúsculas e sem acento, com hífen no lugar de espaço.
+  # Ex: asa-norte, asa-sul, noroeste, sudoeste, lago-norte, lago-sul,
+  #     aguas-claras, park-sul, octogonal, guara-ii
+  bairros:
+    - "asa-norte"
+    - "asa-sul"
+    - "noroeste"
+    - "sudoeste"
+
+  # Preço em reais. Use null para não limitar.
+  preco_min: null
+  preco_max: 1200000
+
+  # Número de quartos.
+  quartos_min: 2
+  quartos_max: null
+
+  # Área útil/total em m². Use null para não limitar.
+  area_min: null
+  area_max: null
+
+  # Tipo de negócio: "venda" ou "aluguel"
+  negocio: "venda"
+
+  # Tipo de imóvel: por enquanto só "apartamento" é suportado pelos scrapers
+  tipo: "apartamento"
+
+# Quantas páginas de resultado buscar por site/bairro (cada página tem
+# ~20 anúncios). Aumentar deixa a busca mais completa, mas mais lenta.
+paginas_por_busca: 2
+
+# Quais sites checar. Remova um site desta lista para desativá-lo.
+sites_ativos:
+  - "wimoveis"
+  - "dfimoveis"
+  - "61imoveis"
