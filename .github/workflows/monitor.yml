@@ -1,0 +1,71 @@
+name: Monitor de imóveis
+
+on:
+  schedule:
+    # Roda algumas vezes por dia (horários em UTC).
+    # 10h, 14h e 19h em Brasília (UTC-3) ≈ 13h, 17h e 22h UTC.
+    - cron: "0 13,17,22 * * *"
+  workflow_dispatch: {} # permite rodar manualmente pela aba "Actions" do GitHub
+
+permissions:
+  contents: write # necessário para o workflow commitar de volta no repo
+
+concurrency:
+  group: monitor-imoveis
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Rodar o scraper
+        run: python -m scraper.main
+
+      - name: Commitar mudanças (novos anúncios e estado)
+        run: |
+          git config user.name "monitor-imoveis-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/index.html data/seen.json
+          git diff --cached --quiet && echo "Nada novo para commitar" || git commit -m "Atualiza anúncios [skip ci]"
+          git push
+
+  pages:
+    needs: scrape
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório (já com a página atualizada)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload do artefato da página
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
